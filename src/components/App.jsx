@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import css from './App.module.css';
+import Notiflix from 'notiflix';
 
 export class App extends Component {
   state = {
@@ -15,7 +16,40 @@ export class App extends Component {
     ],
     filter: '',
   };
+  componentDidMount() {
+    const savedContacts = localStorage.getItem('contacts-items');
+    if (savedContacts) {
+      this.setState({
+        contacts: JSON.parse(savedContacts),
+      });
+    }
+  }
+  
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contacts !== this.state.contacts) {
+      localStorage.setItem('contacts-items', JSON.stringify(this.state.contacts));
+    }
+  }
 
+  addContact = newContact => {
+    const { contacts } = this.state;
+    const { name } = newContact;
+  
+    const isExist = contacts.some(
+      contact => contact.name.toLowerCase() === name.toLowerCase()
+    );
+  
+    if (isExist) {
+      Notiflix.Notify.failure(`${newContact.name} is already in contacts`);
+    } else {
+      const updatedContacts = [...contacts, newContact];
+      this.setState({
+        contacts: updatedContacts,
+      });
+    }
+  };
+
+ 
   handleAddContact = data => {
     const isExist = this.state.contacts.some(
       contact => contact.name.toLowerCase() === data.name.toLowerCase()
